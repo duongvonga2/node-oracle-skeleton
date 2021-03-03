@@ -1,8 +1,8 @@
 import { Document, model, Schema, Model } from "mongoose";
 import bcrypt from "bcrypt";
-import { IUser } from "./user.interface";
+import { IUserDocument } from "./user.interface";
 
-interface UserDocument extends IUser, Document {}
+interface UserDocument extends IUserDocument, Document {}
 // Schema
 const UserSchema = new Schema<UserDocument>(
   {
@@ -36,6 +36,11 @@ const UserSchema = new Schema<UserDocument>(
     verifyCode: {
       type: String,
       select: false,
+    },
+    status: {
+      type: String,
+      enum: ["active", "disabled"],
+      default: "disabled",
     },
   },
   {

@@ -36,6 +36,7 @@ app.use(errorHandler.catcher, errorHandler.handler);
       password: "admin.123",
       phoneNumber: "0917717706",
       isActive: true,
+      status: "active",
     });
     console.log("init admin success");
   }

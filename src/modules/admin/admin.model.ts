@@ -1,10 +1,10 @@
 import { Document, model, Schema } from "mongoose";
 import bcrypt from "bcrypt";
-import { IAdmin } from "./admin.interface";
+import { IAdminDocument } from "./admin.interface";
 
-interface IAdminDocument extends IAdmin, Document {}
+interface AdminDocument extends IAdminDocument, Document {}
 // Schema
-const AdminSchema = new Schema<IAdminDocument>(
+const AdminSchema = new Schema<AdminDocument>(
   {
     firstName: {
       type: String,
@@ -25,6 +25,11 @@ const AdminSchema = new Schema<IAdminDocument>(
     isActive: {
       type: Boolean,
       default: false,
+    },
+    status: {
+      type: String,
+      default: "disabled",
+      enum: ["active", "disabled"],
     },
   },
   {

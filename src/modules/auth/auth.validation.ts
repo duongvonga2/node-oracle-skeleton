@@ -1,5 +1,4 @@
 import Joi from "joi";
-import { IAdmin } from "../admin";
 import { IUser } from "../user";
 
 export const authValidation = {
@@ -19,11 +18,17 @@ export const authValidation = {
       token: Joi.string().required(),
       email: Joi.string().email({ minDomainSegments: 2 }).required(),
     }),
+    resetPassword: Joi.object().keys({
+      email: Joi.string().email({ minDomainSegments: 2 }).required(),
+    }),
   },
   admin: {
     login: Joi.object().keys({
       email: Joi.string().email({ minDomainSegments: 2 }).required(),
       password: Joi.string().min(8).required(),
+    }),
+    resetPassword: Joi.object().keys({
+      email: Joi.string().email({ minDomainSegments: 2 }).required(),
     }),
   },
 };

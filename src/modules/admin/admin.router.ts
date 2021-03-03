@@ -12,6 +12,11 @@ admin.get(
   validate("query", adminValidation.admin.get),
   adminController.admin.getList
 );
+admin.post(
+  "/change-password",
+  validate("body", adminValidation.admin.changePassword),
+  adminController.admin.changePassword
+);
 
 router.use("/admin", isAdminAuthorized, admin);
 

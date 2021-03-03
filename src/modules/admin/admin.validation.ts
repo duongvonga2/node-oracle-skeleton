@@ -11,5 +11,9 @@ export const adminValidation = {
       createdFrom: Joi.date().iso(),
       createdTo: Joi.date().iso(),
     }),
+    changePassword: Joi.object().keys({
+      oldPassword: Joi.string().required(),
+      newPassword: Joi.string().min(8).required(),
+    }),
   },
 };

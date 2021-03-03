@@ -8,7 +8,7 @@ import {
 } from "../../commons";
 import { adminService } from "../admin";
 import { IUser, userService } from "../user";
-import { sendMailToVerify } from "./auth.service";
+import { sendMailToResetPassword, sendMailToVerify } from "./auth.service";
 
 export const authController = {
   user: {
@@ -106,9 +106,31 @@ export const authController = {
         }
 
         user.isActive = true;
+        user.status = "active";
         await user.save();
         return new BaseResponse({ statusCode: 200, data: {} })
           .addMeta({ message: "account is activated" })
+          .return(res);
+      } catch (error) {
+        return next(error);
+      }
+    },
+    resetPassword: async (req: any, res: any, next: any) => {
+      try {
+        const { email } = req.body;
+        const user = await userService.findOne({ email });
+        if (!user) {
+          return new BaseError({
+            statusCode: 400,
+            errors: { email: errors.auth.userNotFound },
+          }).return(res);
+        }
+        const newPassword = genRandomString(10);
+        user.password = newPassword;
+        await user.save();
+        sendMailToResetPassword(email, newPassword);
+        return new BaseResponse({ statusCode: 200, data: {} })
+          .addMeta({ message: "Reset password thành công, hãy kiểm tra email" })
           .return(res);
       } catch (error) {
         return next(error);
@@ -154,6 +176,29 @@ export const authController = {
           statusCode: 200,
           data: { ...data, token },
         }).return(res);
+      } catch (error) {
+        return next(error);
+      }
+    },
+    resetPassword: async (req: any, res: any, next: any) => {
+      try {
+        const { email } = req.body;
+        const admin = await adminService.findOne({ email });
+        if (!admin) {
+          return new BaseError({
+            statusCode: 400,
+            errors: { email: errors.auth.adminNotFound },
+          }).return(res);
+        }
+        const newPassword = genRandomString(10);
+        admin.password = newPassword;
+        await admin.save();
+        sendMailToResetPassword(email, newPassword);
+        return new BaseResponse({ statusCode: 200, data: {} })
+          .addMeta({
+            message: "Reset password thành công, xin hãy kiểm tra email",
+          })
+          .return(res);
       } catch (error) {
         return next(error);
       }

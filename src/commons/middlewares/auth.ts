@@ -1,4 +1,6 @@
 import jwt from "jsonwebtoken";
+import { adminService } from "../../modules/admin/admin.service";
+import { userService } from "../../modules/user/user.service";
 import { BaseError } from "../utils";
 
 export const genJWT = (payload: any) => {
@@ -12,12 +14,12 @@ const decodeJWT = (token: string) => {
   return payload;
 };
 
-export const isUserAuthorized = (req: any, res: any, next: any) => {
+export const isUserAuthorized = async (req: any, res: any, next: any) => {
   try {
     const token = req.header("Authorization").replace("Bearer ", "");
     const data: any = decodeJWT(token);
-
-    if (!data || data.role !== "user" || !data._id) {
+    const user = await userService.findOne({ _id: data._id });
+    if (!user) {
       return next(
         new BaseError({
           statusCode: 401,
@@ -25,7 +27,7 @@ export const isUserAuthorized = (req: any, res: any, next: any) => {
         })
       );
     }
-    req.user = data;
+    req.user = user;
     return next();
     // const user = await
   } catch (error) {
@@ -39,12 +41,12 @@ export const isUserAuthorized = (req: any, res: any, next: any) => {
   }
 };
 
-export const isAdminAuthorized = (req: any, res: any, next: any) => {
+export const isAdminAuthorized = async (req: any, res: any, next: any) => {
   try {
     const token = req.header("Authorization").replace("Bearer ", "");
     const data: any = decodeJWT(token);
-
-    if (!data || data.role !== "admin" || !data._id) {
+    const admin = await adminService.findOne({ _id: data._id });
+    if (!admin) {
       return next(
         new BaseError({
           statusCode: 401,
@@ -52,7 +54,7 @@ export const isAdminAuthorized = (req: any, res: any, next: any) => {
         })
       );
     }
-    req.admin = data;
+    req.admin = admin;
     return next();
   } catch (error) {
     return next(
