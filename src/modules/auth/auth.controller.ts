@@ -16,7 +16,7 @@ export const authController = {
       try {
         const { email } = req.body;
         const existedUser = await userService.findOne({ email });
-        if (existedUser) {
+        if (existedUser.document) {
           return new BaseError({
             statusCode: 400,
             errors: { email: errors.auth.userAlreadyExisted },
@@ -25,15 +25,15 @@ export const authController = {
             .return(res);
         }
 
-        const data: IUser = req.body;
-        data.verifyCode = genRandomString(10);
+        const data: IUser = {
+          ...req.body,
+          isActive: true,
+          password: bcrypt.hashSync(req.body.password, 10),
+        };
 
-        const user = await userService.create(data);
+        const user = await userService.insertOne(data);
 
-        sendMailToVerify(user.email, user.verifyCode);
-
-        const { password, verifyCode, ...other } = user.toJSON();
-        return new BaseResponse({ statusCode: 200, data: other }).return(res);
+        return new BaseResponse({ statusCode: 200, data: user }).return(res);
       } catch (error) {
         return next(error);
       }
@@ -41,8 +41,8 @@ export const authController = {
     login: async (req: any, res: any, next: any) => {
       try {
         const { email, password } = req.body;
-        const user = await userService.findOne({ email }, "+password");
-        if (!user) {
+        const user = await userService.findOne({ email });
+        if (!user || !user.document) {
           return new BaseError({
             statusCode: 400,
             errors: { user: errors.auth.loginFail },
@@ -50,8 +50,9 @@ export const authController = {
             .addMeta({ message: "Đăng nhập thất bại, sai email hoặc mật khẩu" })
             .return(res);
         }
+        const userDocument = user.document;
 
-        const isAccess = bcrypt.compareSync(password, user.password);
+        const isAccess = bcrypt.compareSync(password, userDocument.password);
         if (!isAccess) {
           return new BaseError({
             statusCode: 400,
@@ -61,77 +62,23 @@ export const authController = {
         }
 
         const payload = {
-          _id: user._id,
-          email: user.email,
+          _id: userDocument.id,
+          email: userDocument.email,
           role: "user",
         };
         const token = genJWT(payload);
         const data = {
-          _id: user._id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          gender: user.gender,
-          isActive: user.isActive,
+          _id: userDocument.id,
+          email: userDocument.email,
+          firstName: userDocument.firstName,
+          lastName: userDocument.lastName,
+          gender: userDocument.gender,
+          isActive: userDocument.isActive,
         };
         return new BaseResponse({
           statusCode: 200,
           data: { ...data, token },
         }).return(res);
-      } catch (error) {
-        return next(error);
-      }
-    },
-    verifyUser: async (req: any, res: any, next: any) => {
-      try {
-        const { token, email } = req.query;
-        const user = await userService.findOne({ email }, "+verifyCode");
-        if (!user) {
-          return new BaseError({
-            statusCode: 400,
-            errors: { user: errors.auth.notBeenVerified },
-          })
-            .addMeta({ message: "user not verified" })
-            .return(res);
-        }
-
-        const isVerify = bcrypt.compareSync(user.verifyCode, token);
-        if (!isVerify) {
-          return new BaseError({
-            statusCode: 400,
-            errors: { user: errors.auth.notBeenVerified },
-          })
-            .addMeta({ message: "user is not verified" })
-            .return(res);
-        }
-
-        user.isActive = true;
-        user.status = "active";
-        await user.save();
-        return new BaseResponse({ statusCode: 200, data: {} })
-          .addMeta({ message: "account is activated" })
-          .return(res);
-      } catch (error) {
-        return next(error);
-      }
-    },
-    resetPassword: async (req: any, res: any, next: any) => {
-      try {
-        const { email } = req.body;
-        const user = await userService.findOne({ email });
-        if (!user) {
-          return new BaseError({
-            statusCode: 400,
-            errors: { email: errors.auth.userNotFound },
-          }).return(res);
-        }
-        const newPassword = genRandomString(10);
-        user.password = newPassword;
-        await user.save();
-        sendMailToResetPassword(email, newPassword);
-        return new BaseResponse({ statusCode: 200, data: {} })
-          .addMeta({ message: "Reset password thành công, hãy kiểm tra email" })
-          .return(res);
       } catch (error) {
         return next(error);
       }
@@ -141,8 +88,8 @@ export const authController = {
     login: async (req: any, res: any, next: any) => {
       try {
         const { email, password } = req.body;
-        const admin = await adminService.findOne({ email }, "+password");
-        if (!admin) {
+        const admin = await adminService.findOne({ email });
+        if (!admin || !admin.document) {
           return new BaseError({
             statusCode: 400,
             errors: { user: errors.auth.loginFail },
@@ -151,7 +98,7 @@ export const authController = {
             .return(res);
         }
 
-        const isAccess = bcrypt.compareSync(password, admin.password);
+        const isAccess = bcrypt.compareSync(password, admin.document.password);
         if (!isAccess) {
           return new BaseError({
             statusCode: 400,
@@ -160,45 +107,24 @@ export const authController = {
           }).return(res);
         }
 
+        const adminDocument = admin.document;
+
         const payload = {
-          _id: admin._id,
-          email: admin.email,
+          _id: adminDocument.id,
+          email: adminDocument.email,
           role: "admin",
         };
         const token = genJWT(payload);
         const data = {
-          _id: admin._id,
-          email: admin.email,
-          firstName: admin.firstName,
-          lastName: admin.lastName,
+          _id: adminDocument.id,
+          email: adminDocument.email,
+          firstName: adminDocument.firstName,
+          lastName: adminDocument.lastName,
         };
         return new BaseResponse({
           statusCode: 200,
           data: { ...data, token },
         }).return(res);
-      } catch (error) {
-        return next(error);
-      }
-    },
-    resetPassword: async (req: any, res: any, next: any) => {
-      try {
-        const { email } = req.body;
-        const admin = await adminService.findOne({ email });
-        if (!admin) {
-          return new BaseError({
-            statusCode: 400,
-            errors: { email: errors.auth.adminNotFound },
-          }).return(res);
-        }
-        const newPassword = genRandomString(10);
-        admin.password = newPassword;
-        await admin.save();
-        sendMailToResetPassword(email, newPassword);
-        return new BaseResponse({ statusCode: 200, data: {} })
-          .addMeta({
-            message: "Reset password thành công, xin hãy kiểm tra email",
-          })
-          .return(res);
       } catch (error) {
         return next(error);
       }

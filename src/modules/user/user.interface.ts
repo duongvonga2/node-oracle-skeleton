@@ -1,5 +1,8 @@
+import { IBaseQuery } from "../../commons";
+
 // use for mongoose schema
-export interface IUserDocument {
+export interface IUser {
+  id?: string;
   email: string;
   password: string;
   firstName: string;
@@ -12,10 +15,16 @@ export interface IUserDocument {
   status: TUserStatus;
 }
 // use for other
-export interface IUser extends IUserDocument {
-  _id: string;
-}
-
 export type TUserStatus = "active" | "disabled";
 
 export type TGender = "male" | "female" | "unknown";
+
+export interface IUserFilter {
+  id?: string;
+  email?: string;
+  phoneNumber?: string;
+  isActive?: boolean;
+  status?: TUserStatus;
+}
+
+export interface IUserFilterByAdmin extends IUserFilter, IBaseQuery {}

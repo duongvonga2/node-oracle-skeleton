@@ -188,6 +188,14 @@
   dependencies:
     "@types/node" "*"
 
+"@types/oracledb@^5.1.0":
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/@types/oracledb/-/oracledb-5.1.0.tgz#4d0356ff88bfaa56b7969c8c43d66794cf1af069"
+  integrity sha512-t5TyGUDTBp6hEGrtFHg9oWfvrXOvDYinzgt/GfhbOffu3Fz+zd45+D/AZj0hJfKcs50xfkz9kNzVTMaHBBNxmQ==
+  dependencies:
+    "@types/node" "*"
+    dotenv "^8.2.0"
+
 "@types/qs@*":
   version "6.9.5"
   resolved "https://registry.yarnpkg.com/@types/qs/-/qs-6.9.5.tgz#434711bdd49eb5ee69d90c1d67c354a9a8ecb18b"
@@ -1878,6 +1886,11 @@ one-time@^1.0.0:
   integrity sha512-5DXOiRKwuSEcQ/l0kGCF6Q3jcADFv5tSmRaJck/OqkVFcOzutB134KRSfF0xDrL39MNnqxbHBbUUcjZIhTgb2g==
   dependencies:
     fn.name "1.x.x"
+
+oracledb@^5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/oracledb/-/oracledb-5.1.0.tgz#2139469d7318a48f3fed6c00f0d98e5049bb769f"
+  integrity sha512-/IpzG729lFj8NBsA0xaOijdf6ZO3VuJbebma/hSf+VUZoIyzI/mCzBX047ramb/W8yJ1SV/HdWgs+XEczbqsXg==
 
 p-cancelable@^1.0.0:
   version "1.1.0"

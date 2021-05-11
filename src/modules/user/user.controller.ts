@@ -1,13 +1,16 @@
 import bcrypt from "bcrypt";
 import { BaseError, BaseResponse, genRandomString } from "../../commons";
-import { IUser } from "./user.interface";
+import { IUser, IUserFilterByAdmin } from "./user.interface";
 import { userService } from "./user.service";
 
 export const userController = {
   user: {
     getUserInfo: async (req: any, res: any, next: any) => {
       try {
-        return new BaseResponse({ statusCode: 200, data: {} }).return(res);
+        return new BaseResponse({
+          statusCode: 200,
+          data: { ...req.user },
+        }).return(res);
       } catch (error) {
         return next(error);
       }
@@ -16,14 +19,12 @@ export const userController = {
       try {
         const { oldPassword, newPassword } = req.body;
         const user: IUser = req.user;
-        console.log("user", user);
-        const currentUser = await userService.findOne(
-          { _id: user._id },
-          "+password"
-        );
+
+        const currentUser = await userService.findById(user.id);
+        const userDocument = currentUser.document;
         const isRightPassword = bcrypt.compareSync(
           oldPassword,
-          currentUser.password
+          userDocument.password
         );
         if (!isRightPassword) {
           return new BaseError({
@@ -32,10 +33,29 @@ export const userController = {
             message: "Mật khẩu không đúng",
           }).return(res);
         }
-        currentUser.password = newPassword;
-        await currentUser.save();
-        const { password, ...other } = currentUser.toJSON();
-        return new BaseResponse({ statusCode: 200, data: other }).return(res);
+        userDocument.password = bcrypt.hashSync(newPassword, 10);
+        const newUser = await userService.findByIdAndUpdate(
+          user.id,
+          userDocument
+        );
+        return new BaseResponse({ statusCode: 200, data: newUser }).return(res);
+      } catch (error) {
+        return next(error);
+      }
+    },
+  },
+  admin: {
+    getList: async (req: any, res: any, next: any) => {
+      try {
+        const { page, pageSize, ...query }: IUserFilterByAdmin = req.query;
+        const skip = pageSize * (page - 1);
+        const [total, userList] = await Promise.all([
+          userService.count(query),
+          userService.find(query, { skip, limit: pageSize }),
+        ]);
+        return new BaseResponse({ statusCode: 200, data: userList })
+          .addMeta({ total })
+          .return(res);
       } catch (error) {
         return next(error);
       }

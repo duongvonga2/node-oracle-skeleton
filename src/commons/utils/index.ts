@@ -4,3 +4,4 @@ export * from "./errors";
 export * from "./morgan-custom";
 export * from "./winston-logger";
 export * from "./random-string";
+export * from "./base-interface";

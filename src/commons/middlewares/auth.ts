@@ -16,10 +16,11 @@ const decodeJWT = (token: string) => {
 
 export const isUserAuthorized = async (req: any, res: any, next: any) => {
   try {
+    // get token to decode data, you can use "npm passport" package instead
     const token = req.header("Authorization").replace("Bearer ", "");
     const data: any = decodeJWT(token);
-    const user = await userService.findOne({ _id: data._id });
-    if (!user) {
+    const user = await userService.findById(data.id);
+    if (!user || !user.document) {
       return next(
         new BaseError({
           statusCode: 401,
@@ -27,7 +28,7 @@ export const isUserAuthorized = async (req: any, res: any, next: any) => {
         })
       );
     }
-    req.user = user;
+    req.user = user.document;
     return next();
     // const user = await
   } catch (error) {
@@ -45,8 +46,8 @@ export const isAdminAuthorized = async (req: any, res: any, next: any) => {
   try {
     const token = req.header("Authorization").replace("Bearer ", "");
     const data: any = decodeJWT(token);
-    const admin = await adminService.findOne({ _id: data._id });
-    if (!admin) {
+    const admin = await adminService.findById(data.id);
+    if (!admin || !admin.document) {
       return next(
         new BaseError({
           statusCode: 401,
@@ -54,7 +55,7 @@ export const isAdminAuthorized = async (req: any, res: any, next: any) => {
         })
       );
     }
-    req.admin = admin;
+    req.admin = admin.document;
     return next();
   } catch (error) {
     return next(

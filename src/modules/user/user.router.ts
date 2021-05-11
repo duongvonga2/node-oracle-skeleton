@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isUserAuthorized, validate } from "../../commons";
+import { isAdminAuthorized, isUserAuthorized, validate } from "../../commons";
 import { userController } from "./user.controller";
 import { userValidation } from "./user.validation";
 
@@ -15,6 +15,6 @@ user.post(
 );
 
 router.use("/user", isUserAuthorized, user);
-router.use("/admin", admin);
+router.use("/admin", isAdminAuthorized, admin);
 
 export { router as userRouter };
