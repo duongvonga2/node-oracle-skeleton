@@ -1,11 +1,6 @@
 import { SodaCollection } from "oracledb";
 import { IBaseOptions, IBaseOracleDocument, oracleDB } from "../../commons";
-import {
-  IAdmin,
-  IAdminCreate,
-  IAdminFilter,
-  IAdminUpdate,
-} from "./admin.interface";
+import { IAdmin, IAdminCreate, IAdminUpdate } from "./admin.interface";
 import bcrypt from "bcrypt";
 
 class AdminService {
@@ -19,6 +14,9 @@ class AdminService {
   insertOne = async (
     data: IAdminCreate
   ): Promise<IBaseOracleDocument<IAdmin>> => {
+    const date = new Date().toISOString();
+    data.createdAt = date;
+    data.updatedAt = date;
     data.password = bcrypt.hashSync(data.password, 10);
     const document = await this.adminModel.insertOneAndGet(data); // by oracle, method document.getContent() in this api will return null because performance reason
     return {
@@ -31,9 +29,12 @@ class AdminService {
   insertMany = async (
     dataList: IAdminCreate[]
   ): Promise<IBaseOracleDocument<IAdmin>[]> => {
-    dataList.forEach(
-      (item) => (item.password = bcrypt.hashSync(item.password, 10))
-    );
+    const date = new Date().toISOString();
+    dataList.forEach((item) => {
+      item.password = bcrypt.hashSync(item.password, 10);
+      item.createdAt = date;
+      item.updatedAt = date;
+    });
     const documentList = await this.adminModel.insertManyAndGet(dataList);
     const result = documentList.map((document, index) => {
       return {
@@ -63,7 +64,7 @@ class AdminService {
     };
   };
   findOne = async (
-    query: IAdminFilter
+    query: Record<string, any>
   ): Promise<IBaseOracleDocument<IAdmin>> => {
     const document = await this.adminModel.find().filter(query).getOne();
     if (!document) {
@@ -81,23 +82,11 @@ class AdminService {
     return await this.adminModel.find().key(id).remove();
   };
   find = async (
-    query: IAdminFilter,
-    selection: string,
+    query: Record<string, any>,
     options: IBaseOptions
   ): Promise<IBaseOracleDocument<IAdmin>[]> => {
     const { limit, skip } = options;
-    const filterSpec: Record<string, any> = {
-      $query: query,
-    };
-    if (selection) {
-      const selectionList = selection.split(" ");
-      const orderby: any = {};
-      selectionList.forEach((item) => {
-        const selectedNumber = item.indexOf("-") === 0 ? -1 : 1;
-        orderby[item] = selectedNumber;
-      });
-      filterSpec.$orderBy = orderby;
-    }
+
     const documentList = await this.adminModel
       .find()
       .filter({ ...query })
@@ -114,7 +103,7 @@ class AdminService {
       };
     });
   };
-  count = async (query: IAdminFilter) => {
+  count = async (query: Record<string, any>) => {
     const total = await this.adminModel
       .find()
       .filter({ ...query })
@@ -125,6 +114,7 @@ class AdminService {
     id: string,
     docs: IAdminUpdate
   ): Promise<IBaseOracleDocument<IAdmin>> => {
+    docs.updatedAt = new Date().toISOString();
     const document = await this.adminModel // by oracle, method document.getContent() in this api will return null because performance reason
       .find()
       .key(id)

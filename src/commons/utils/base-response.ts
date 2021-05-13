@@ -1,3 +1,5 @@
+import { IBaseOracleDocument } from "./base-interface";
+
 export class BaseResponse<T> {
   statusCode: number;
   data: T;

@@ -1,6 +1,7 @@
 import { SodaCollection } from "oracledb";
 import { IBaseOptions, IBaseOracleDocument, oracleDB } from "../../commons";
 import { IUser, IUserFilter } from "./user.interface";
+import brcypt from "bcrypt";
 
 class UserService {
   private userModel: SodaCollection;
@@ -11,6 +12,8 @@ class UserService {
     return true;
   };
   insertOne = async (data: IUser): Promise<IBaseOracleDocument<IUser>> => {
+    data.createdAt = new Date().toISOString();
+    data.updatedAt = new Date().toISOString();
     const document = await this.userModel.insertOneAndGet(data);
     const user = { id: document.key, ...data };
     return {
@@ -23,6 +26,12 @@ class UserService {
   insertMany = async (
     dataList: IUser[]
   ): Promise<IBaseOracleDocument<IUser>[]> => {
+    const date = new Date().toISOString();
+    dataList.forEach((data) => {
+      data.createdAt = date;
+      data.updatedAt = date;
+      data.password = brcypt.hashSync(data.password, 10);
+    });
     const documentList = await this.userModel.insertManyAndGet(dataList);
     const result = documentList.map((document, index) => {
       const user = { id: document.key, ...dataList[index] };
@@ -49,7 +58,9 @@ class UserService {
       document: user,
     };
   };
-  findOne = async (query: IUserFilter): Promise<IBaseOracleDocument<IUser>> => {
+  findOne = async (
+    query: Record<string, any>
+  ): Promise<IBaseOracleDocument<IUser>> => {
     const document = await this.userModel.find().filter(query).getOne();
     if (!document) {
       return null;
@@ -67,13 +78,30 @@ class UserService {
     return await this.userModel.find().key(id).remove();
   };
   find = async (
-    query: IUserFilter,
+    filterSpec: Record<string, any>,
     options: IBaseOptions
   ): Promise<IBaseOracleDocument<IUser>[]> => {
     const { limit, skip } = options;
+    // const { createdFrom, createdTo, ...other } = query;
+    // const filterSpec: Record<string, any> = {
+    //   $query: other,
+    // };
+    // if (query.createdFrom) {
+    //   filterSpec.$query.createdAt = { $gte: new Date(createdFrom) };
+    // }
+    // if (query.createdTo) {
+    //   if (!filterSpec.$query.createdAt) {
+    //     filterSpec.$query.createdAt = { $lte: new Date(createdTo) };
+    //   } else {
+    //     filterSpec.$query.createdAt = {
+    //       ...filterSpec.$query.createdAt,
+    //       $lte: new Date(createdTo),
+    //     };
+    //   }
+    // }
     const documentList = await this.userModel
       .find()
-      .filter({ ...query })
+      .filter(filterSpec)
       .skip(skip)
       .limit(limit)
       .getDocuments();
@@ -88,10 +116,10 @@ class UserService {
       };
     });
   };
-  count = async (query: IUserFilter) => {
+  count = async (filterSpec: Record<string, any>) => {
     const total = await this.userModel
       .find()
-      .filter({ ...query })
+      .filter({ ...filterSpec })
       .count();
     return total.count;
   };
@@ -99,6 +127,7 @@ class UserService {
     id: string,
     docs: IUser
   ): Promise<IBaseOracleDocument<IUser>> => {
+    docs.updatedAt = new Date().toISOString();
     const document = await this.userModel.find().key(id).replaceOneAndGet(docs);
     if (!document) {
       return null;

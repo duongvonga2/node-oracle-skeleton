@@ -1,5 +1,7 @@
 import bcrypt from "bcrypt";
-import { BaseError, BaseResponse } from "../../commons";
+import { BaseError, BaseResponse, IBaseOracleDocument } from "../../commons";
+import { sendMailToResetPassword } from "../auth";
+import { userHandler } from "./user.handler";
 import { IUser, IUserFilterByAdmin } from "./user.interface";
 import { userService } from "./user.service";
 
@@ -7,9 +9,14 @@ export const userController = {
   user: {
     getUserInfo: async (req: any, res: any, next: any) => {
       try {
-        return new BaseResponse({
+        const user = await userService.findById(req.user.id);
+        if (user && user.document && user.document.password) {
+          delete user.document.password;
+        }
+        // const { password, ...data } = user;
+        return new BaseResponse<IBaseOracleDocument<IUser>>({
           statusCode: 200,
-          data: { ...req.user },
+          data: user,
         }).return(res);
       } catch (error) {
         return next(error);
@@ -38,7 +45,13 @@ export const userController = {
           user.id,
           userDocument
         );
-        return new BaseResponse({ statusCode: 200, data: newUser }).return(res);
+        if (newUser && newUser.document && newUser.document.password) {
+          delete newUser.document.password;
+        }
+        return new BaseResponse<IBaseOracleDocument<IUser>>({
+          statusCode: 200,
+          data: newUser,
+        }).return(res);
       } catch (error) {
         return next(error);
       }
@@ -48,12 +61,21 @@ export const userController = {
     getList: async (req: any, res: any, next: any) => {
       try {
         const { page, pageSize, ...query }: IUserFilterByAdmin = req.query;
+        const filterSpec = userHandler.handler.getQuerySpec(query);
         const skip = pageSize * (page - 1);
         const [total, userList] = await Promise.all([
-          userService.count(query),
-          userService.find(query, { skip, limit: pageSize }),
+          userService.count(filterSpec),
+          userService.find(filterSpec, { skip, limit: pageSize }),
         ]);
-        return new BaseResponse({ statusCode: 200, data: userList })
+        userList.forEach((user) => {
+          if (user.document && user.document.password) {
+            delete user.document.password;
+          }
+        });
+        return new BaseResponse<IBaseOracleDocument<IUser>[]>({
+          statusCode: 200,
+          data: userList,
+        })
           .addMeta({ total })
           .return(res);
       } catch (error) {

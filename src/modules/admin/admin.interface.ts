@@ -8,6 +8,8 @@ export interface IAdminCreate {
   lastName: string;
   isActive: boolean;
   status: TAdminStatus;
+  createdAt: string;
+  updatedAt: string;
 }
 export interface IAdmin extends IAdminCreate {
   id: string;
@@ -36,6 +38,7 @@ export interface IAdminUpdate {
   firstName?: string;
   lastName?: string;
   phoneNumber?: string;
+  updatedAt?: string;
 }
 
 export interface IAdminUpdatePassword {

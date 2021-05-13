@@ -1,4 +1,4 @@
-import { BaseError, BaseResponse } from "../../commons";
+import { BaseError, BaseResponse, IBaseOracleDocument } from "../../commons";
 import { IAdmin, IAdminQuery, IAdminUpdatePassword } from "./admin.interface";
 import { adminService } from "./admin.service";
 import bcrypt from "bcrypt";
@@ -12,9 +12,17 @@ export const adminController = {
         const skip = page ? (page - 1) * pageSize : 0;
         const [total, adminList] = await Promise.all([
           adminService.count(query),
-          adminService.find({ ...query }, "-password", { limit, skip }),
+          adminService.find({ ...query }, { limit, skip }),
         ]);
-        return new BaseResponse({ statusCode: 200, data: adminList })
+        adminList.forEach((admin) => {
+          if (admin.document && admin.document.password) {
+            delete admin.document.password;
+          }
+        });
+        return new BaseResponse<IBaseOracleDocument<IAdmin>[]>({
+          statusCode: 200,
+          data: adminList,
+        })
           .addMeta({ total })
           .return(res);
       } catch (error) {
@@ -43,9 +51,13 @@ export const adminController = {
           admin.id,
           adminDocument
         );
-        return new BaseResponse({ statusCode: 200, data: newAdmin }).return(
-          res
-        );
+        if (newAdmin && newAdmin.document && newAdmin.document.password) {
+          delete newAdmin.document.password;
+        }
+        return new BaseResponse<IBaseOracleDocument<IAdmin>>({
+          statusCode: 200,
+          data: newAdmin,
+        }).return(res);
       } catch (error) {
         return next(error);
       }
@@ -63,7 +75,10 @@ export const adminController = {
           req.admin.id,
           adminDocument
         );
-        return new BaseResponse({
+        if (newAdmin && newAdmin.document && newAdmin.document.password) {
+          delete newAdmin.document.password;
+        }
+        return new BaseResponse<IBaseOracleDocument<IAdmin>>({
           statusCode: 200,
           data: { ...newAdmin, document: adminDocument },
         }).return(res);

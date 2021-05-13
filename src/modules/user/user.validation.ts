@@ -15,6 +15,8 @@ export const userValidation = {
       email: Joi.string(),
       isActive: Joi.boolean(),
       status: Joi.string().valid("disabled", "active"),
+      createdFrom: Joi.date().iso(),
+      createdTo: Joi.date().iso(),
     }),
   },
 };

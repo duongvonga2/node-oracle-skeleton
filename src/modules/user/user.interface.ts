@@ -9,8 +9,8 @@ export interface IUserCreate {
   gender: TGender;
   isActive: boolean;
   verifyCode: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
   status: TUserStatus;
 }
 
@@ -28,6 +28,8 @@ export interface IUserFilter {
   phoneNumber?: string;
   isActive?: boolean;
   status?: TUserStatus;
+  createdFrom?: Date;
+  createdTo?: Date;
 }
 
 export interface IUserFilterByAdmin extends IUserFilter, IBaseQuery {}

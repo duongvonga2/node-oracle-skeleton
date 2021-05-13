@@ -28,7 +28,7 @@ const initAdmin = async () => {
       phoneNumber: "xxxxx",
       isActive: true,
       status: "active",
-    });
+    } as any);
     console.log("init admin success", newAdmin);
   }
 };

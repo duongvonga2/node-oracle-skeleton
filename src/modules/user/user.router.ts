@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { isAdminAuthorized, isUserAuthorized, validate } from "../../commons";
-import { adminController } from "../admin";
 import { userController } from "./user.controller";
 import { userValidation } from "./user.validation";
 
@@ -9,7 +8,7 @@ const user = Router();
 const admin = Router();
 
 user.get("/info", userController.user.getUserInfo);
-user.post(
+user.put(
   "/change-password",
   validate("body", userValidation.user.changePassword),
   userController.user.changePassword
@@ -18,7 +17,7 @@ user.post(
 admin.get(
   "/get-list",
   validate("query", userValidation.admin.getList),
-  adminController.admin.getList
+  userController.admin.getList
 );
 
 router.use("/user", isUserAuthorized, user);
