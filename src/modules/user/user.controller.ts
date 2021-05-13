@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { BaseError, BaseResponse, genRandomString } from "../../commons";
+import { BaseError, BaseResponse } from "../../commons";
 import { IUser, IUserFilterByAdmin } from "./user.interface";
 import { userService } from "./user.service";
 

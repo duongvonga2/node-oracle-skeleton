@@ -4,7 +4,7 @@ import express, { json, urlencoded } from "express";
 import { join } from "path";
 import bodyParser from "body-parser";
 import cors from "cors";
-import { oracleDB, errorHandler, morganCustom } from "./commons";
+import { oracleDB, errorHandler, morganCustom, sysdbaNumber } from "./commons";
 import { router } from "./modules/router";
 import { adminService } from "./modules/admin";
 import { userService } from "./modules/user";
@@ -14,9 +14,13 @@ dotenv.config();
 const app = express();
 
 const initAdmin = async () => {
-  const admin = await adminService.findOne({ email: "duongvonga2@gmail.com" });
+  // const admin = await adminService.findOne({ email: "xxx@gmail.com" });
+  const admin = await adminService.findOne({ email: "xxx@gmail.com" });
+  if (admin) {
+    console.log("admin", admin);
+  }
   if (!admin) {
-    await adminService.insertOne({
+    const newAdmin = await adminService.insertOne({
       email: "xxx@gmail.com",
       firstName: "Admin",
       lastName: "Root",
@@ -25,7 +29,7 @@ const initAdmin = async () => {
       isActive: true,
       status: "active",
     });
-    console.log("init admin success");
+    console.log("init admin success", newAdmin);
   }
 };
 
@@ -34,15 +38,10 @@ const init = async () => {
     const connection = await oracleDB.connectDB({
       user: "sys",
       password: "password",
-      connectString: ` (DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1521))
-      (CONNECT_DATA =
-        (SERVER = DEDICATED)
-        (SERVICE_NAME = ORCL)
-        (SID=orclcd)
-      )
-    )
-    `,
+      connectString: "localhost:1521/orcl",
+      privilege: sysdbaNumber, // as the role in sqldeverloper tool
     });
+
     await adminService.init();
     await userService.init();
     app.use("*", cors());

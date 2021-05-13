@@ -58,6 +58,7 @@ export const isAdminAuthorized = async (req: any, res: any, next: any) => {
     req.admin = admin.document;
     return next();
   } catch (error) {
+    console.log("error", error);
     return next(
       new BaseError({
         statusCode: 401,

@@ -90,32 +90,32 @@ I use `pm2` to deploy project on cloud server from local.
 2.  Setup environment
     Install pm2:
 
-```sh
-npm install pm2@latest -g
-```
+    ```
+      npm install pm2@latest -g
+    ```
 
-or
+    or
 
-```
-yarn global add pm2
-```
+    ```
+    yarn global add pm2
+    ```
 
-Make sure your project has ecosystem.config.js file before run.
+    Make sure your project has ecosystem.config.js file before run.
 
-```sh
-pm2 deploy `your environment name` setup
-```
+    ```sh
+    pm2 deploy `your environment name` setup
+    ```
 
-After run, if the terminal show the message: `deploy success` and on server, the path that you defined to deploy contain 3 folder `current, shared, source`, congratulation, you do it successfully.
+    After run, if the terminal show the message: `deploy success` and on server, the path that you defined to deploy contain 3 folder `current, shared, source`, congratulation, you do it successfully.
 
 3. Deploy
    Then, you can deploy your project by the command:
 
-```sh
-  pm2 deploy `your environment name`
-```
+    ```sh
+      pm2 deploy `your environment name`
+    ```
 
-_For more examples, please refer to the [PM2 Documentation](https://pm2.keymetrics.io/docs/usage/deployment/)_
+    _For more examples, please refer to the [PM2 Documentation](https://pm2.keymetrics.io/docs/usage/deployment/)_
 
 <!-- CONTACT -->
 

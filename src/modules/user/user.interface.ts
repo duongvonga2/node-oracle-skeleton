@@ -1,8 +1,7 @@
 import { IBaseQuery } from "../../commons";
 
 // use for mongoose schema
-export interface IUser {
-  id?: string;
+export interface IUserCreate {
   email: string;
   password: string;
   firstName: string;
@@ -13,6 +12,10 @@ export interface IUser {
   createdAt: Date;
   updatedAt: Date;
   status: TUserStatus;
+}
+
+export interface IUser extends IUserCreate {
+  id: string;
 }
 // use for other
 export type TUserStatus = "active" | "disabled";

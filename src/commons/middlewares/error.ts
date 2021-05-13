@@ -8,10 +8,10 @@ const handler = (error: IBaseError, req: any, res: any, next: any) => {
   console.log("error", error);
 
   if (req.user) {
-    error.user_id = req.user._id;
+    error.user_id = req.user.id;
   }
   if (req.admin) {
-    error.admin = req.admin._id;
+    error.admin = req.admin.id;
   }
   logger.error(error);
   if (error instanceof BaseError && error.statusCode) {

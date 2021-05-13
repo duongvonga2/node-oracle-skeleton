@@ -21,7 +21,7 @@ export const logger = winston.createLogger({
     // - Write all logs error (and below) to `error.log`.
     //
     new DailyRotateFile({
-      filename: "radio-story-%DATE%.log",
+      filename: "oracle-template-%DATE%.log",
       maxSize: "20m",
       maxFiles: "30d",
       dirname: "logs",

@@ -1,30 +1,25 @@
-export interface IAdmin {
-  id?: string;
+import { IBaseQuery } from "../../commons";
+
+export interface IAdminCreate {
   email: string;
   password: string;
   phoneNumber: string;
   firstName: string;
   lastName: string;
-  isActive?: boolean;
+  isActive: boolean;
   status: TAdminStatus;
-  createdAt?: Date;
-  updatedAt?: Date;
+}
+export interface IAdmin extends IAdminCreate {
+  id: string;
 }
 
 export type TAdminStatus = "active" | "disabled";
-export interface IAdminQuery extends IAdmin {
-  pageSize: number;
-  page: number;
-  sort: string;
-  createdFrom: Date;
-  createdTo: Date;
-}
-
 export interface IAdminDocument<T> {
   id: string;
   createdOn: string;
   lastModified: string;
-  document: Record<keyof IAdmin, any>;
+  document: T;
+  // document: IAdmin;
 }
 
 export interface IAdminFilter {
@@ -33,4 +28,17 @@ export interface IAdminFilter {
   phoneNumber?: string;
   isActive?: boolean;
   status?: TAdminStatus;
+}
+
+export interface IAdminQuery extends IBaseQuery, IAdminFilter {}
+
+export interface IAdminUpdate {
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+}
+
+export interface IAdminUpdatePassword {
+  oldPassword: string;
+  newPassword: string;
 }

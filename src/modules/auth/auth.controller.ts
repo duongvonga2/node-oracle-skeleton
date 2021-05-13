@@ -1,14 +1,7 @@
 import bcrypt from "bcrypt";
-import {
-  errors,
-  genJWT,
-  BaseError,
-  BaseResponse,
-  genRandomString,
-} from "../../commons";
+import { errors, genJWT, BaseError, BaseResponse } from "../../commons";
 import { adminService } from "../admin";
 import { IUser, userService } from "../user";
-import { sendMailToResetPassword, sendMailToVerify } from "./auth.service";
 
 export const authController = {
   user: {
@@ -16,7 +9,7 @@ export const authController = {
       try {
         const { email } = req.body;
         const existedUser = await userService.findOne({ email });
-        if (existedUser.document) {
+        if (existedUser && existedUser.document) {
           return new BaseError({
             statusCode: 400,
             errors: { email: errors.auth.userAlreadyExisted },
@@ -33,7 +26,10 @@ export const authController = {
 
         const user = await userService.insertOne(data);
 
-        return new BaseResponse({ statusCode: 200, data: user }).return(res);
+        return new BaseResponse({
+          statusCode: 200,
+          data: { ...user, document: data },
+        }).return(res);
       } catch (error) {
         return next(error);
       }
@@ -62,13 +58,13 @@ export const authController = {
         }
 
         const payload = {
-          _id: userDocument.id,
+          id: userDocument.id,
           email: userDocument.email,
           role: "user",
         };
         const token = genJWT(payload);
         const data = {
-          _id: userDocument.id,
+          id: userDocument.id,
           email: userDocument.email,
           firstName: userDocument.firstName,
           lastName: userDocument.lastName,
@@ -89,6 +85,7 @@ export const authController = {
       try {
         const { email, password } = req.body;
         const admin = await adminService.findOne({ email });
+        console.log("admin", JSON.stringify(admin));
         if (!admin || !admin.document) {
           return new BaseError({
             statusCode: 400,
@@ -110,13 +107,13 @@ export const authController = {
         const adminDocument = admin.document;
 
         const payload = {
-          _id: adminDocument.id,
+          id: adminDocument.id,
           email: adminDocument.email,
           role: "admin",
         };
         const token = genJWT(payload);
         const data = {
-          _id: adminDocument.id,
+          id: adminDocument.id,
           email: adminDocument.email,
           firstName: adminDocument.firstName,
           lastName: adminDocument.lastName,

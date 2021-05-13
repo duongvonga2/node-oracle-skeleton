@@ -1,6 +1,12 @@
-import oracledb, { Connection, SodaDatabase } from "oracledb";
+import oracledb, {
+  Connection,
+  ConnectionAttributes,
+  SodaDatabase,
+} from "oracledb";
 import { logger } from "../utils";
 
+// auto commit document after insert record
+oracledb.autoCommit = true;
 interface IOracleDBConstructor {
   user: string;
   password: string;
@@ -11,17 +17,14 @@ class OracleDB {
   connection: Connection;
   soda: SodaDatabase;
 
-  async connectDB(data: IOracleDBConstructor) {
-    const { connectString, password, user } = data;
+  async connectDB(data: ConnectionAttributes) {
     try {
       const connection = await oracledb.getConnection({
-        user,
-        password,
-        connectString,
+        ...data,
       });
       this.connection = connection;
       this.soda = connection.getSodaDatabase();
-      return true;
+      return connection;
     } catch (error) {
       // console.log("error", error);
       logger.error(error);
@@ -30,3 +33,4 @@ class OracleDB {
   }
 }
 export const oracleDB = new OracleDB();
+export const sysdbaNumber = oracledb.SYSDBA;
